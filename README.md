@@ -94,3 +94,7 @@ Example request body:
 	"password": "strongPass123"
 }
 ```
+Live demo:  https://urbanspicies.netlify.app/
+
+Author: Muhammad Umar Farooq
+Email: mumarfarooqkhan45@gmail.com
