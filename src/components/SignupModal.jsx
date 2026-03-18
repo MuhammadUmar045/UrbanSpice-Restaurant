@@ -8,16 +8,37 @@ const initialForm = {
 
 function SignupModal({ isOpen, onClose, onSubmit, isSubmitting }) {
   const [form, setForm] = useState(initialForm);
+  const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
     if (!isOpen) {
       setForm(initialForm);
+      setValidationErrors({});
     }
   }, [isOpen]);
 
   if (!isOpen) {
     return null;
   }
+
+  const validateForm = () => {
+    const errors = {};
+
+    if (form.fullName.trim().length < 2) {
+      errors.fullName = "Full name must be at least 2 characters";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      errors.email = "Please enter a valid email address";
+    }
+
+    if (form.password.length < 6) {
+      errors.password = "Password must be at least 6 characters";
+    }
+
+    return errors;
+  };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -26,6 +47,14 @@ function SignupModal({ isOpen, onClose, onSubmit, isSubmitting }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    setValidationErrors({});
     onSubmit(form);
   };
 
@@ -53,8 +82,12 @@ function SignupModal({ isOpen, onClose, onSubmit, isSubmitting }) {
             type="text"
             value={form.fullName}
             onChange={handleChange}
+            aria-invalid={!!validationErrors.fullName}
             required
           />
+          {validationErrors.fullName ? (
+            <span className="form-error">{validationErrors.fullName}</span>
+          ) : null}
 
           <label htmlFor="email">Email Address</label>
           <input
@@ -63,8 +96,12 @@ function SignupModal({ isOpen, onClose, onSubmit, isSubmitting }) {
             type="email"
             value={form.email}
             onChange={handleChange}
+            aria-invalid={!!validationErrors.email}
             required
           />
+          {validationErrors.email ? (
+            <span className="form-error">{validationErrors.email}</span>
+          ) : null}
 
           <label htmlFor="password">Password</label>
           <input
@@ -74,11 +111,15 @@ function SignupModal({ isOpen, onClose, onSubmit, isSubmitting }) {
             minLength={6}
             value={form.password}
             onChange={handleChange}
+            aria-invalid={!!validationErrors.password}
             required
           />
+          {validationErrors.password ? (
+            <span className="form-error">{validationErrors.password}</span>
+          ) : null}
 
           <button className="submit-button" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Signing Up..." : "Sign Up"}
+            {isSubmitting ? "Creating account..." : "Sign Up"}
           </button>
         </form>
       </div>

@@ -99,19 +99,26 @@ function App() {
       const payload = await response.json();
 
       if (!response.ok) {
-        throw new Error(payload.message || "Signup failed.");
+        throw new Error(payload.message || "Signup failed. Please try again.");
+      }
+
+      if (payload.user) {
+        setCurrentUser(payload.user);
       }
 
       setStatusMessage({
         type: "success",
-        text: "Signup successful. Welcome to the table list!",
+        text: payload.message || "Account created! Welcome!",
       });
-      setCurrentUser(payload.user ?? { fullName: formData.fullName, email: formData.email });
-      setIsSignupOpen(false);
+
+      setTimeout(() => {
+        setIsSignupOpen(false);
+        setStatusMessage({ type: "", text: "" });
+      }, 1500);
     } catch (error) {
       setStatusMessage({
         type: "error",
-        text: error.message || "Unable to complete signup.",
+        text: error.message || "Unable to complete signup. Please try again.",
       });
     } finally {
       setIsSubmitting(false);

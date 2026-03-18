@@ -642,6 +642,18 @@ main {
   font: inherit;
 }
 
+.signup-form input[aria-invalid="true"] {
+  border-color: #c85c4d;
+  background-color: #fde9e7;
+}
+
+.form-error {
+  font-size: 0.78rem;
+  color: #8b302b;
+  font-weight: 600;
+  margin-top: -8px;
+}
+
 .submit-button {
   margin-top: 8px;
   background: var(--orange-700);

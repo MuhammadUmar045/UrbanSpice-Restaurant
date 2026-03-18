@@ -21,40 +21,70 @@ app.get("/api/health", (_request, response) => {
   });
 });
 
-app.post("/api/auth/signup", async (request, response) => {
-  if (mongoose.connection.readyState !== 1) {
-    return response.status(503).json({
-      message: "Database is not connected. Please try again shortly.",
-    });
-  }
+const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
 
+app.post("/api/auth/signup", async (request, response) => {
   const { fullName, email, password } = request.body;
 
   if (!fullName || !email || !password) {
     return response.status(400).json({
-      message: "fullName, email and password are required.",
+      success: false,
+      message: "Full name, email, and password are required.",
+    });
+  }
+
+  if (fullName.trim().length < 2) {
+    return response.status(400).json({
+      success: false,
+      message: "Full name must be at least 2 characters.",
+    });
+  }
+
+  if (!validateEmail(email)) {
+    return response.status(400).json({
+      success: false,
+      message: "Please enter a valid email address.",
+    });
+  }
+
+  if (password.length < 6) {
+    return response.status(400).json({
+      success: false,
+      message: "Password must be at least 6 characters long.",
+    });
+  }
+
+  if (mongoose.connection.readyState !== 1) {
+    return response.status(503).json({
+      success: false,
+      message: "Service temporarily unavailable. Please try again.",
     });
   }
 
   try {
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
 
     if (existingUser) {
       return response.status(409).json({
-        message: "Email already exists. Please use another email.",
+        success: false,
+        message: "This email is already registered. Please use a different email or login.",
       });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
-      fullName,
-      email,
+      fullName: fullName.trim(),
+      email: email.toLowerCase().trim(),
       password: hashedPassword,
     });
 
     return response.status(201).json({
-      message: "User signed up successfully.",
+      success: true,
+      message: "Account created successfully!",
       user: {
         id: user._id,
         fullName: user.fullName,
@@ -62,9 +92,10 @@ app.post("/api/auth/signup", async (request, response) => {
       },
     });
   } catch (error) {
+    console.error("Signup error:", error);
     return response.status(500).json({
-      message: "Failed to create user.",
-      error: error.message,
+      success: false,
+      message: "Could not create account. Please try again.",
     });
   }
 });
